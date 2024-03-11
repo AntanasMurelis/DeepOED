@@ -1,0 +1,40 @@
+defaults:
+  - _self_
+  - submitit
+  - override hydra/launcher: submitit_slurm
+
+IC_Test:
+  t_range: [0, 10]
+  n_points: 100
+  repeats: 20
+  noise_std_dev: 0.2
+
+  true_args: [4.5996327, 0.5331725, 1.7905502, 4.4637203] # [2.5, 1.2, 4.2, 2]
+
+  true_x0: [1.0, 1.0]
+
+  true_x0_: [5.0, 5.0]
+
+  # ed: [0, 4, 10, 16, 22, 28, 34, 40, 46, 52, 58, 64, 70, 76, 82]
+  ed: [86, 64, 68, 56, 67, 63, 70, 74, 40, 58, 37, 13, 77, 94, 24, 61, 66, 18, 31, 26]
+  # ed1: [0, 4, 10, 16, 22, 28, 34, 40, 46, 52, 58, 64, 70, 76, 82]
+  ed1: [86, 64, 68, 56, 67, 63, 70, 74, 40, 58, 37, 13, 77, 94, 24, 61, 66, 18, 31, 26]
+
+  w0:
+    - 2.0
+    - 2.0
+    - 2.0
+    - 2.0
+
+hydra:
+  sweeper:
+    params:
+      IC_Test.noise_std_dev: 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.9
+
+
+
+logging:
+  project: 'ED Tests'
+  group: 'IC ED Tests LV try5 - 800k designs' #'Constant K Latent Dimension search'
+  name: 'IC - ${IC_Test.true_args[0]} - ${IC_Test.true_args[1]} - ${IC_Test.true_args[2]} - ${IC_Test.true_args[3]} std - ${IC_Test.noise_std_dev}'
+  tags: ["Lotka-Voltera", "W/O GPU"]

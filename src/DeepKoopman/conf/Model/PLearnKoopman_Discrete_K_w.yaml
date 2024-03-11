@@ -1,0 +1,46 @@
+Architecture:
+  _target_: 'DynamicKoopman.PLearnKoop'
+  _convert_: 'none'
+
+Hyperparameters:
+
+  latent_dim: 4
+
+  encoder:
+
+    type: MLP
+    include_w: True
+    params:
+      layers: null
+      activation: relu
+      scale: 0.1
+      use_bias: True
+      layer_norm: False
+
+  decoder:
+
+    type: MLP
+    params:
+      layers: null
+      activation: relu
+      scale: 0.1
+      use_bias: True
+      layer_norm: True
+
+  propagator:
+
+    type: Discrete
+    learn_koopman: False
+    include_IC: False
+    only_IC: False
+    latent_dim: ${..latent_dim}
+
+    encoder:
+
+      type: LipMLP
+      params:
+        layers: null
+        activation: relu
+        scale: 0.1
+        use_bias: True
+        layer_norm: True

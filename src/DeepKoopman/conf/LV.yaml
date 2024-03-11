@@ -1,0 +1,85 @@
+defaults:
+  - _self_
+  - optimizer: adam
+  - submitit
+  - Model/PLearnKoopmanLip_K(w)_Phi(x,w).yaml
+  - override hydra/launcher: submitit_slurm
+
+description:
+  description: "Lotka-Voltera, with parameter DEPENDENT Koopman matrix, and generated trajectories. Abs error"
+
+random:
+  seed: 0
+
+vector_field:
+  name: 's2'
+
+time_series:
+  ts_l: 0
+  ts_u: 13
+  points: 30
+
+  continuous: True
+
+time_increase:
+  total_time_increase: 0
+
+data:
+  # dsize: [100096,  2]
+  dsize: [200192,  2]
+  # dsize: [1, 1]
+  # dsize: [10, 2]
+
+  dmin: 0.01
+  dmax: 5.0
+  batch_size: 128
+  parameters: [1.3, 0.9, 1.6, 1.2]
+
+  min_p_noise: [0.5, 0.5, 0.5, 0.5]
+  max_p_noise: [5, 5, 5, 5]
+
+  # min_p_noise: ${data.parameters}
+  # max_p_noise: ${data.parameters}
+
+architecture:
+
+  mid_d: 1000
+  en: 2
+  dn: 2
+  pn: 2
+  
+
+training:
+  steps: 200000
+  # steps: 100
+
+  save_every: 1
+  learning_rate: 1e-4
+  mode: 'Plearn'
+  model_name: "PLearnKoopman"
+
+logging:
+  project: 'Discrete LV'
+  group: 'Lotka-Voltera C Try9 200k No latent Error' #'Constant K Latent Dimension search'
+  name: 'LS - ${Model.Hyperparameters.latent_dim}_LR_${optimizer.learning_rate}'
+  tags: ["Phi", "K", "Discrete", "Lotka-Voltera", "Constant Parameters", "Phi(w)"]
+
+hydra:
+  sweeper:
+    params:
+      optimizer.learning_rate: 1e-4, 1e-5, 1e-6
+      # architecture.en: 2, 3, 4
+      # architecture.dn: 2, 3, 4
+      # architecture.pn: 1, 2, 3
+      Model.Hyperparameters.latent_dim: 5, 10, 20
+      # data.parameters: 
+      # - '[1, 1, 1, 1]'
+      # - '[2, 2, 2, 2]'
+      # - '[3, 3, 3, 3]'
+      # - '[4, 4, 4, 4]'
+      # - '[5, 5, 5, 5]'
+
+  run:
+    dir: /cluster/scratch/amurelis/NODE_multiruns/LV/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}/LS_${Model.Hyperparameters.latent_dim}_LR_${optimizer.learning_rate}
+  sweep:
+    dir: /cluster/scratch/amurelis/NODE_multiruns/LV/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}/LS_${Model.Hyperparameters.latent_dim}_LR_${optimizer.learning_rate}

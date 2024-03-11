@@ -1,0 +1,43 @@
+defaults:
+  - _self_
+  - submitit
+  - override hydra/launcher: submitit_slurm
+
+IC_Test:
+  t_range: [0, 10]
+  n_points: 1000
+  repeats: 1000
+  noise_std_dev: 1.0
+  noise_percentage: null
+  vector_field: 'osc'
+
+  true_args: [-2.0, 1.0]
+
+  true_x0: [2.0, 2.0]
+  upper_x0: [2.0, 2.0]
+  lower_x0: [2.0, 0.0]
+  x0_n_points: 1
+
+  # ed: [105, 268, 394, 564, 698, 832, 999, 927, 478,  58]
+  ed: [107, 269, 395, 565, 700, 833, 999, 927, 479,  59]
+  # ed: [ 0, 10, 20, 30, 40, 50, 60, 70, 80, 90]
+  # ed: [0,  50, 100, 150, 200, 250, 300, 350, 400, 450]
+  # ed: [68, 48, 85, 11, 99, 84, 11, 33, 99, 84] # likelihood 100
+  # ed: [ 8, 41, 33, 59, 60, 69, 85,  6, 84, 10] # likelihood 1
+
+  no_ed: False
+  full_ed: True
+
+  w0: [-1.90, 1.1]
+
+hydra:
+  sweeper:
+    params:
+      IC_Test.noise_std_dev: 1.0 #0.05, 0.2, 0.5, 1
+
+logging:
+  mode: 'online' # 'dryrun', 'disabled', 'run', 'offline', 'online'
+  project: 'ED Tests'
+  group: 'IC ED Oscillator Try 6 + Likelihood test' #'Constant K Latent Dimension search'
+  name: 'VField ${IC_Test.vector_field} Noise ${IC_Test.noise_std_dev} NO ED ${IC_Test.no_ed} Latent ED'
+  tags: ["S1", "W/O GPU"]

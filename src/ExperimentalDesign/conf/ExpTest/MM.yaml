@@ -1,0 +1,52 @@
+defaults:
+  - _self_
+  - submitit
+  - override hydra/launcher: submitit_slurm
+
+IC_Test:
+  t_range: [0, 10]
+  n_points: 1000
+  repeats: 100
+  noise_std_dev: 1.0
+  noise_percentage: null
+  vector_field: 's3'
+
+  true_args: [70.0, 45.0]
+
+  true_x0: [110.0]
+  upper_x0: [110.0]
+  lower_x0: [110.0]
+  x0_n_points: 1
+
+
+  # ed: [0, 22,  5,  1, 43, 17,  6,  4, 15, 64, 33,  7, 14,  2, 16,  8, 13,
+  #       3, 85, 51, 12] # 20 points 
+        # , 34,  9, 23, 18, 32, 11, 24, 35, 50, 69, 98, 19, 31,
+        # 25, 52, 36, 21, 78, 30, 20, 37, 53, 10, 65, 49, 26, 38, 29, 39]
+  
+  ed: [232,  12, 100, 437,  19, 173,  20, 660,  17,  80,  18, 889,  16,
+                 73,  15,  14, 143,  13,  71,  21,  70,  22,  11,  67,  10, 133,
+                 23,  68,  24,  66, 203,   9,  25, 132,  69,   8,  65,  26,  64,
+                128,  27,  63,   7, 999, 266, 357, 509, 826, 204,  28]
+ 
+  no_ed: False
+  full_ed: False
+
+  w0: [75.0, 45.0]
+
+optimizer:
+  learning_rate: 0.001
+  max_steps: 10000
+
+hydra:
+  sweeper:
+    params:
+      IC_Test.no_ed: true, false
+      IC_Test.noise_std_dev: 1.0, 2.0, 3.0, 5.0
+
+logging:
+  mode: 'online' # 'dryrun', 'disabled', 'run', 'offline', 'online'
+  project: 'ED Tests'
+  group: 'IC ED MM Try 6 MSE study - 75 45' #'Constant K Latent Dimension search'
+  name: '${IC_Test.vector_field} Noise ${IC_Test.noise_std_dev} NO ED ${IC_Test.no_ed}'
+  tags: ["MM", "W/O GPU"]

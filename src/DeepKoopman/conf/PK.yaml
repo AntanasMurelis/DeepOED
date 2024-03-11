@@ -1,0 +1,78 @@
+defaults:
+  - _self_
+  - optimizer: adam
+  - submitit
+  - Model/PLearnKoopmanLip_K(w)_Phi(x,w).yaml
+  - override hydra/launcher: submitit_slurm
+
+description:
+  description: "PLearnKoopman PK, with parameter dependent Koopman matrix, and generated trajectories. Abs error"
+
+random:
+  seed: 0
+
+vector_field:
+  name: 's7'
+
+time_series:
+  ts_l: 0
+  ts_u: 10
+  points: 30
+
+  continuous: True
+
+
+time_increase:
+  total_time_increase: 0
+
+data:
+  dsize: [200192, 2]
+  # dsize: [10, 2]
+
+  dmin: [0.0,0.0]
+  dmax: [100.0, 0.0]
+
+  batch_size: 128
+  min_p_noise: [0.01, 0.1, 0.1]
+  max_p_noise: [10, 100, 100]
+  # limited_exposure: [0]
+
+architecture:
+
+  mid_d: 500
+  en: 2
+  dn: 2
+  pn: 2
+  
+
+training:
+  steps: 400000
+  # steps: 1
+
+  save_every: 1
+  learning_rate: 1e-4
+  mode: 'Plearn'
+  model_name: 'PK_D${Model.Hyperparameters.latent_dim}'
+
+optimizer:
+  learning_rate: 1e-4
+  max_steps: 10000
+
+logging:
+  project: 'PK'
+  group: 'PK - Try 7 K(w)'
+  name: 'LS - ${Model.Hyperparameters.latent_dim} - LR - ${training.learning_rate}'
+  tags: ["Abs error", "PK", "Continuous", "MLP", "Larger Max steps"]
+
+hydra:
+  sweeper:
+    params:
+      architecture.mid_d: 500, 1000
+      training.learning_rate: 1e-4, 1e-5, 1e-6
+      Model.Hyperparameters.latent_dim: 2, 3, 4, 5
+
+
+  run:
+    dir: /cluster/scratch/amurelis/NODE_multiruns/PK/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}/LS_${Model.Hyperparameters.latent_dim}_LR_${optimizer.learning_rate}
+  sweep:
+    dir: /cluster/scratch/amurelis/NODE_multiruns/PK/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}/LS_${Model.Hyperparameters.latent_dim}_LR_${optimizer.learning_rate}

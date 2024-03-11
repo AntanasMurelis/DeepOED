@@ -1,0 +1,72 @@
+defaults:
+  - _self_
+  - optimizer: adam
+  - submitit
+  - Model/PLearnKoopmanLip_K(w)_Phi(x,w).yaml
+  - override hydra/launcher: submitit_slurm
+
+description:
+  description: "S1, with parameter DEPENDENT Koopman matrix, and generated trajectories. Abs error"
+
+random:
+  seed: 0
+
+vector_field:
+  name: 's3'
+
+time_series:
+  ts_l: 0
+  ts_u: 10
+  points: 30
+
+  continuous: True
+
+time_increase:
+  total_time_increase: 0
+
+data:
+  dsize: [200192,  1]
+  # dsize: [1, 1] # for testing
+
+  dmin: 10.0
+  dmax: 200.0
+
+  batch_size: 128
+
+  min_p_noise: [10.0, 10.0]
+  max_p_noise: [200.0, 200.0]
+
+architecture:
+
+  mid_d: 500
+  en: 2
+  dn: 2
+  pn: 2
+  
+
+training:
+  steps: 400000
+  # steps: 1 # for testing
+
+  save_every: 1
+  learning_rate: 1e-3
+  mode: 'Plearn'
+  model_name: "MM"
+
+logging:
+  project: 'MM'
+  group: 'Michaelis-Menten Final Try 3' 
+  name: 'LS - ${Model.Hyperparameters.latent_dim}_LR_${optimizer.learning_rate}'
+  tags: ["Linear", "K(w)", "Continuous"]
+
+hydra:
+  # version_base: 1.1
+  sweeper:
+    params:
+      optimizer.learning_rate: 1e-3, 1e-4, 1e-5, 1e-6
+      Model.Hyperparameters.latent_dim: 1 , 2, 3, 4, 5
+
+  run:
+    dir: .
+  sweep:
+    dir: .

@@ -1,0 +1,10 @@
+LODED*
+DeepED*
+wandb
+outputs
+jobs
+__pycache__
+*.eqx
+multirun
+outputs
+

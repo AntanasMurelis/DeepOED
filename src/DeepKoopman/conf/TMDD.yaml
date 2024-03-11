@@ -1,0 +1,76 @@
+defaults:
+  - _self_
+  - optimizer: adam
+  - submitit
+  - Model/PLearnKoopmanLip_K(w)_Phi(x,w).yaml
+  - override hydra/launcher: submitit_slurm
+
+description:
+  description: "PLearnKoopman TMDD, with parameter dependent Koopman matrix, and generated trajectories. Abs error"
+
+random:
+  seed: 0
+
+vector_field:
+  name: 's4'
+
+time_series:
+  ts_l: 0
+  ts_u: 0.1
+  points: 40
+
+  continuous: True
+
+
+time_increase:
+  total_time_increase: 20
+
+data:
+  dsize: [200192, 2]
+  # dsize: [10, 2]
+
+  dmin: [0,500]
+  dmax: [0, 2000]
+
+  batch_size: 128
+  min_p_noise: [0.1, 0.0001, 1, 0.1, 0.5]
+  max_p_noise: [10, 0.1, 5, 10, 3]
+  limited_exposure: [1]
+
+architecture:
+
+  mid_d: 500
+  en: 2
+  dn: 2
+  pn: 2
+  
+
+training:
+  steps: 200000
+  # steps: 1
+
+  save_every: 1
+  learning_rate: 1e-4
+  mode: 'Plearn'
+  model_name: "PLearnKoopman"
+
+logging:
+  project: 'TMDD'
+  group: 'TMDD - Try 2 K(w) Larger Max steps'
+  name: 'LS - ${Model.Hyperparameters.latent_dim} - LR - ${training.learning_rate}'
+  tags: ["Abs error", "TMDD", "Continuous", "MLP", "Larger Max steps"]
+
+hydra:
+  sweeper:
+    params:
+      optimizer.learning_rate: 1e-4, 1e-5, 1e-6
+      # architecture.en: 2, 3, 4
+      # architecture.dn: 2, 3, 4
+      # architecture.pn: 1, 2, 3
+      Model.Hyperparameters.latent_dim: 1, 2, 3, 4, 5, 10
+
+
+  run:
+    dir: /cluster/scratch/amurelis/NODE_multiruns/TMDD/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}/LS_${Model.Hyperparameters.latent_dim}
+  sweep:
+    dir: /cluster/scratch/amurelis/NODE_multiruns/TMDD/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}/LS_${Model.Hyperparameters.latent_dim}

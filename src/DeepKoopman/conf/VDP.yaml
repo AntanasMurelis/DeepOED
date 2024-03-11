@@ -1,0 +1,77 @@
+defaults:
+  - _self_
+  - optimizer: adam
+  - submitit
+  - Model/PLearnKoopmanLip_K(w)_Phi(x,w).yaml
+  - override hydra/launcher: submitit_slurm
+
+description:
+  description: "Van-Der-Pol, with parameter DEPENDENT Koopman matrix, and generated trajectories. Abs error"
+
+random:
+  seed: 0
+
+vector_field:
+  name: 's5'
+
+time_series:
+  ts_l: 0
+  ts_u: 10
+  points: 30
+
+  continuous: True
+
+time_increase:
+  total_time_increase: 0
+
+data:
+  # dsize: [100096,  2]
+  dsize: [200192,  2]
+  # dsize: [1, 2]
+
+  dmin: [0.1, 0.1]
+  dmax: [4, 4]
+  batch_size: 128
+  parameters: [0.2]
+
+  min_p_noise: [0.0]
+  max_p_noise: [4]
+
+  # min_p_noise: ${data.parameters}
+  # max_p_noise: ${data.parameters}
+
+architecture:
+
+  mid_d: 500
+  en: 2
+  dn: 2
+  pn: 2
+  
+
+training:
+  steps: 400000
+  # steps: 1
+
+  save_every: 1
+  learning_rate: 1e-4
+  mode: 'Plearn'
+  model_name: "PLearnKoopman"
+
+logging:
+  project: 'Continuous VDP'
+  group: 'Van-Der-Poll C Try4 400k mu 0 - 4' #'Constant K Latent Dimension search'
+  name: 'LS - ${Model.Hyperparameters.latent_dim}_LR_${optimizer.learning_rate}'
+  tags: ["Phi", "Continuous", "VDP", "Phi(w)"]
+
+hydra:
+  sweeper:
+    params:
+      architecture.mid_d: 500, 1000
+      optimizer.learning_rate: 1e-6 , 1e-5, 1e-4, 1e-3
+      Model.Hyperparameters.latent_dim: 1, 2, 3, 4, 5, 6
+
+
+  run:
+    dir: /cluster/scratch/amurelis/NODE_multiruns/VDP/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}/LS_${Model.Hyperparameters.latent_dim}_LR_${optimizer.learning_rate}
+  sweep:
+    dir: /cluster/scratch/amurelis/NODE_multiruns/VDP/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}/LS_${Model.Hyperparameters.latent_dim}_LR_${optimizer.learning_rate}

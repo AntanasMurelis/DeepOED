@@ -1,0 +1,75 @@
+defaults:
+  - _self_
+  - optimizer: adam
+  - submitit
+  - Model/PLearnKoopmanLip_K(w)_Phi(x,w).yaml
+  - override hydra/launcher: submitit_slurm
+
+description:
+  description: "PLearnKoopman Hill, with parameter DEPENDENT Koopman matrix, and generated trajectories. Abs error"
+
+random:
+  seed: 0
+
+vector_field:
+  name: 's6'
+
+time_series:
+  ts_l: 0
+  ts_u: 10
+  points: 30
+
+  continuous: True
+
+time_increase:
+  total_time_increase: 0
+
+data:
+  dsize: [200192,  1]
+  # dsize: [1, 1]
+  # dsize: [10, 1]
+
+  dmin: 5
+  dmax: 200
+  batch_size: 128
+  min_p_noise: [10, 10, 5]
+  max_p_noise: [200, 200, 0]
+
+architecture:
+
+  mid_d: 500
+  en: 2
+  dn: 2
+  pn: 2
+  
+
+training:
+  steps: 200000
+  # steps: 10 
+
+  save_every: 1
+  learning_rate: 1e-4
+  mode: 'Plearn'
+  model_name: "PLearnKoopman"
+
+logging:
+  project: 'Hill Continuous'
+  group: 'Hill K(w) try 2' #'Constant K Latent Dimension search'
+  name: 'LS - ${Model.Hyperparameters.latent_dim}'
+  tags: ["Linear", "K(w)", "Continuous"]
+
+hydra:
+  sweeper:
+    params:
+      optimizer.learning_rate: 1e-4, 1e-5
+      architecture.mid_d: 500, 1000
+      # architecture.en: 2, 3, 4
+      # architecture.dn: 2, 3, 4
+      # architecture.pn: 1, 2, 3
+      Model.Hyperparameters.latent_dim: 2, 3, 4
+
+
+  run:
+    dir: /cluster/scratch/amurelis/NODE_multiruns/Hill/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}/LS_${Model.Hyperparameters.latent_dim}
+  sweep:
+    dir: /cluster/scratch/amurelis/NODE_multiruns/Hill/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}/LS_${Model.Hyperparameters.latent_dim}

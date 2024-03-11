@@ -1,0 +1,32 @@
+defaults:
+  - _self_
+  - submitit
+  - override hydra/launcher: submitit_slurm
+
+Design:
+  t_range: [0, 10]
+  n_points: 100
+  budget: 15
+
+  noise: 0.01
+  lam: 1
+  rcond: 1e-15
+  bayes: False
+
+  num_params: 1300
+  params_l: [1, 1, 1, 1]
+  params_u: [2, 2, 2, 2]
+  true_x0: [1.0, 1.0]
+
+  model_path: '/cluster/home/amurelis/NODE/models/PLearnKoopmanLV_10D.eqx'
+
+hydra:
+  sweeper:
+    params:
+      Design.num_params: 1300
+
+logging:
+  project: 'Design Generation'
+  group: 'Try 3: Test tighter hypercube' #'Constant K Latent Dimension search'
+  name: 'LV Design - gamma ${Design.num_params}'
+  tags: ["Lotka-Voltera", "W/O GPU"]

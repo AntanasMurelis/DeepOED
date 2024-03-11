@@ -1,0 +1,56 @@
+defaults:
+  - _self_
+  - submitit
+  - override hydra/launcher: submitit_slurm
+
+IC_Test:
+  t_range: [0, 10]
+  n_points: 100
+  repeats: 100
+  noise_std_dev: 1.0
+  noise_percentage: null
+  vector_field: 's5'
+
+  true_args: [1.5]
+
+  true_x0: Null
+  upper_x0: [2.0, 2.0]
+  lower_x0: [0.0, 2.0]
+  x0_n_points: 20
+
+  # ed: [25, 72, 99, 49, 87, 11, 37, 61, 99,  6, 85, 22, 35, 93, 73, 58, 99, 47,  6, 16]
+  # ed: [26, 74, 50, 99, 12, 88, 38, 62,  5, 99, 22, 92, 76, 37, 63, 50,  5, 99, 84, 94, 15, 99, 27,  4, 72, 41, 56, 94, 99,  4] # Sigma = 1
+  # ed: [26, 74, 50, 99, 12, 88, 38, 62,  5, 99]
+  # ed: [28, 79, 52, 99, 12, 64, 40, 91, 72,  5, 23, 99, 38, 86,  5, 53, 17,
+  #               93, 99, 68] # Minimax 20 points sigma = 1
+  # ed: [28, 79, 52, 99, 10, 63, 40, 97,  2, 90, 15,  2, 97, 99,  8,  2, 22,
+  #                2,  7,  2, 97, 85, 69, 99, 91, 97, 99,  2,  7, 97] #, 92,  2, 13, 97,
+                # 99,  2,  7, 85, 97, 92, 99,  2, 45, 97,  7,  2, 13,  2, 99, 92] # Minimax 50 points sigma = 1.0
+  # ed: [98, 36, 93, 72, 20, 90, 69, 74, 20, 99, 92, 20, 91, 99, 94, 20, 69,
+  #               89, 96, 20] #  # Non-linear design / 20 points / sigma = 1 
+  ed: [32, 76, 99, 53, 15, 97, 64,  1, 46, 11, 90] #,  2, 84, 96, 99, 38,  2] #,
+                #  8,  2, 97, 99, 69, 91, 97,  7,  2,  2, 99, 97, 92,  7,  2, 97, 99,
+                # 85, 97,  2,  7, 92, 99, 97,  2, 13,  2,  6, 97, 92, 99, 86,  2] # Bayesian design / 50 points / sigma = 0.1
+  
+  random_ed: True
+  no_ed: False
+  full_ed: False
+  
+  w0: [1.3]
+
+optimizer:
+  learning_rate: 0.001
+  max_steps: 10000
+
+hydra:
+  sweeper:
+    params:
+      # IC_Test.no_ed: true, false
+      IC_Test.noise_std_dev:  0.5 #, 0.1
+
+logging:
+  mode: 'disabled' # 'dryrun', 'disabled', 'run', 'offline', 'online'
+  project: 'ED Tests'
+  group: 'IC ED VDP Try 15 IC screen' #'Constant K Latent Dimension search'
+  name: 'VField ${IC_Test.vector_field} Noise ${IC_Test.noise_std_dev} NO ED ${IC_Test.no_ed} Random ED ${IC_Test.random_ed} Full ED ${IC_Test.full_ed}'
+  tags: ["S1", "W/O GPU"]

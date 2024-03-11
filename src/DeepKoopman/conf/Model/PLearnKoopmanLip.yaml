@@ -1,0 +1,16 @@
+Architecture:
+  _target_: 'Archs.PLearnKoopmanLip'
+  _convert_: 'all'
+
+Hyperparameters:
+  params_encoding: true
+  IC_K: false
+  mid_d: 1000
+  latent_d: 20
+  en: 2
+  dn: 2
+  pn: 2
+
+  ff: False
+  scale: 32
+  
