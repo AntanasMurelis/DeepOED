@@ -12,7 +12,6 @@ LODED is a research project developed as part of a Master thesis, focusing on th
 
 - **Linearised ODE Designs (LODED)**: LODED leverages the above ideas for finding sampling schemes for non-linear dynamical systems. LODED learns a linear represenation of the non-linear dynamical system and subsequently uses linear experimental design to arrive at sampling schemes that allow for efficient estimation of system parameters.
 
-
 ![](docs/images/Overview.png)
 
 
@@ -35,6 +34,7 @@ pip install .
 # Alternatively, for development purposes, you might want to install the project in editable mode
 pip install -e .
 ```
+
 
 ## Use
 
