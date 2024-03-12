@@ -1,3 +1,7 @@
+#----------------------------------------------------------------
+# Latent Linear Experimental Designs
+#----------------------------------------------------------------
+
 import jax
 import numpy as np
 import jax.numpy as jnp
@@ -7,8 +11,7 @@ from icecream import ic
 
 from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches
-
-import seaborn as sns  # For a nicer color palette
+import seaborn as sns 
 
 from utils.Solvers import solve, hess_solve
 from utils.Tests import *
@@ -17,14 +20,16 @@ from GP.GaussianProcess import GaussianProcess, ConstrainedGaussianProcess
 from HermiteEmbedding import *
 from ExperimentalDesign.Selection import GreedySelector
 
-import os
-
 from scipy.optimize import minimize_scalar
+from itertools import product
 
+def cartesian_product(*arrays):
+    return jnp.array(list(product(*arrays)))
 
-
-
-#----------------------------------------------------------------        
+#----------------------------------------------------------------
+# Nullspace C
+#----------------------------------------------------------------     
+   
 def get_Lt(dPhi, Phi, A_theta):
     
     I = jnp.identity(A_theta.shape[0])
@@ -36,6 +41,7 @@ def get_Lt(dPhi, Phi, A_theta):
 def get_Lt_discrete(Phi_, Phi, A_theta):
     A_Phi = jax.vmap(lambda x: A_theta @ x)(Phi)
     return Phi_ - A_Phi
+
 #----------------------------------------------------------------
 
 # @jax.jit
@@ -63,8 +69,6 @@ def null_space(A, rcond=None):
     mask = jnp.arange(vh.shape[0]) < rank
     
     Q = jnp.where(mask[:, None], 0, vh)
-    # ic(Q)
-    # Reverse the order of the rows
     return Q
 
 def get_C(dPhi, Phi, A_theta):
@@ -89,6 +93,9 @@ def get_Q_discrete(Phi_, Phi, A_theta, rcond = 10e-5):
     L = L.reshape(-1, L.shape[-1])
     Q = null_space(L, rcond=rcond)
     return Q
+
+
+#---Minimization of information criteria-------------------------
 
 def minimize_scalarization(hermite, t_, constraint, design = 'A', lam = None, eta = None, sigma = None):
     
@@ -208,8 +215,9 @@ def minimize_scalarization_min_max_robust(hermite, t_, constraint, budget, lam =
 #----------------------------------------------------------------
 
 
-
-#--Continuous Designs-------------------------------------------------------
+#----------------------------------------------------------------
+# Continuous Designs
+#----------------------------------------------------------------
 
 def A_design_DCS(Phi_t, C, lam=None):
     
@@ -303,15 +311,8 @@ def Frank_Wolfe(objective, initial_distribution, tol=1e-5, iterations = 100, lin
         else:
             step_size = 2 / (i + 3)
 
-        # print("step:", step_size)
-        # if jnp.abs(obj - prev_obj) < tol:
-        #     break
-        # prev_obj = obj
         
         distribution = (1 - step_size) * distribution + step_size * s
-
-        # Normalize the distribution
-        # distribution /= jnp.sum(distribution)
         
     
     return distribution
@@ -389,10 +390,6 @@ def minimize_scalarization_continuous_FW(hermite, t_, constraint, sigma = None, 
     objective = jax.jit(objective)
     
     initial_distribution = jnp.ones(len(t_))/len(t_)
-    # Initial distribution of one at the start and zero everywhere else
-    
-    # initial_distribution = jnp.zeros(len(t_))  
-    # initial_distribution = initial_distribution.at[0].set(1)
     
     if design == 'A':
         # eta = Frank_Wolfe(objective, initial_distribution, iterations=iterations, line_search=line_search, tol=1e-5)
@@ -411,8 +408,6 @@ def minimize_scalarization_continuous_FW(hermite, t_, constraint, sigma = None, 
         
 
 #--Plotting--------------------------------------------------------------------
-
-
 linear_field = lambda t, x, args: args @ x.T
 
 import jax
@@ -582,8 +577,6 @@ def plot_eta(t, all_points, eta_t, sample_x0, vector_field, params, main_sample 
 
     return None
 
-
-
 def plot_design_phase(t, all_points, eta_t, sample_x0, vector_field, params, design_sample = True):
 
     # Convert JAX arrays to NumPy arrays for set operations
@@ -617,9 +610,6 @@ def plot_design_phase(t, all_points, eta_t, sample_x0, vector_field, params, des
             ax.scatter( trajectory[design_indices, 0], trajectory[design_indices, 1], marker='o', color='lightgreen', s=15)
 
     plt.show()  
-
-    
-    
 
 def plot_greedy_results(t, eta, ed_points, model, multi_args, parameters, eval_range=(0, 5), eta_cont = None, num_eval_points=1000):
     """
@@ -685,9 +675,6 @@ def plot_greedy_results(t, eta, ed_points, model, multi_args, parameters, eval_r
     plt.show()
 #------------------------------------------------------------------------------
 
-from itertools import product
-def cartesian_product(*arrays):
-    return jnp.array(list(product(*arrays)))
 
 def MM_Design():
     
@@ -790,7 +777,6 @@ def MM_Design():
     
     plot_greedy_results(t_, eta, ed_points, model, multi_args, parameters, (0, 10), 100)
         
-
 def S1_design():
     
     #---Step 1: Generate synthetic training data---------------------
@@ -1167,7 +1153,6 @@ def linear_oscillator_design():
     
     # plot_greedy_results(t_, eta, ed_points, model, multi_args, parameters, (0, 10), 100)
         
-
 def TMDD_design():
     # jax.config.update("jax_enable_x64", True)
 
@@ -1257,32 +1242,6 @@ def TMDD_design():
     
     plot_greedy_results(t_, eta, ed_points, model, multi_args, parameters, (0, 10), 100)
         
-
-def plot_designs(t, etas, ed_points):
-    
-    # Use a light color palette
-    palette = sns.color_palette("pastel", len(etas))
-
-    # Create the plot hq figure with higher DPI
-    fig, ax = plt.subplots()#figsize=(6, 6), dpi=300)
-    
-    #--ED-------------------------------------------------------------
-    # Plot overall experimental design points
-    y_min, y_max = ax.get_ylim()
-    y_range = y_max - y_min
-
-    # Adjust the plot bottom space for individual designs
-    if etas is not None:
-        relative_offset_factor = 0.015  # Adjust this factor as needed
-        y_offset = y_range * relative_offset_factor
-        # y_offset = 1.5  # Adjusted offset from the overall design
-        extra_space = len(etas) * y_offset
-        ax.set_ylim(y_min - extra_space, y_max)
-        y_min, y_max = ax.get_ylim()  # Update y_min after adjusting the ylim
-        y_min = y_min + y_offset 
-    
-
-
 def LV_Design():
     
     #---Step 1: Generate synthetic training data---------------------
@@ -1367,83 +1326,6 @@ def LV_Design():
     
     # plot_greedy_results(t_, eta, ed_points, model, multi_args, parameters, (0, 10), 1000)
         
-def non_linear_LV_Design():
-    
-    #---Step 1: Generate synthetic training data---------------------
-    ti = jnp.linspace(0, 10, 10)
-    t_ = jnp.linspace(0, 10, 100)
-    args = jnp.array([1.3, 0.9, 1.6, 1.2]) 
-    multi_args = jax.random.uniform(key = jax.random.PRNGKey(100), shape = (1, 4), minval = jnp.array([0.5, 0.5, 0.5, 0.5]),
-                                    maxval = jnp.array([5, 5, 5, 5]))
-    multi_args = jnp.array((2.5, 1.2, 4.2, 2))
-    # multi_args = jnp.array([(60.0, 30.4), (30, 70), (25, 45), (100, 10)])
-
-    true_x0 = jnp.array([2.0, 2.0])  # True initial condition
-    synthetic_data = solve(ti, true_x0, args, s2_vfield) # Generating synthetic data
-    synthetic_data = synthetic_data + jax.random.normal(jax.random.PRNGKey(0), shape=synthetic_data.shape) * 1
-    # Floor the data to zero
-    synthetic_data = jnp.where(synthetic_data < 0, 0, synthetic_data)
-    #----------------------------------------------------------------
-
-
-    #---Step 2: Load the model---------------------------------------  
-    jax.config.update("jax_enable_x64", False)
-    # models = list(map(lambda x: load(x, type = 'PLearnKoop'), os.listdir("Users/antanas/GitRepo/NODE/Models/PLearnKoopman_LV_2D_Lip_10_16.eqx")))
-    # model = load("/Users/antanas/GitRepo/NODE/Models/LV_10D_1e-5/PLearnKoopmanLV_10D.eqx", type = 'DynamicKoopman')
-    import glob
-    model = list(map(lambda path: load(path, type = 'DynamicKoopman'), glob.glob("/Users/antanas/GitRepo/NODE/Models/LV_K_IC_1218/*")))[0]
-    jax.config.update("jax_enable_x64", True)
-
-    # embedded_data_1 = model.get_latent_series(ti, true_x0, args)
-    # A_thetas = jax.vmap(lambda x: x.get_KoopmanK(None, None))(models)
-    # A_thetas = jax.vmap(lambda w: model.get_KoopmanK(None, w))(multi_args)
-    A_theta = model.get_KoopmanK(true_x0, multi_args)
-    # A_thetas = A_thetas[:4]
-    # A_theta_ = A_thetas[-2].reshape(1, *A_thetas[-1].shape)
-    #----------------------------------------------------------------
-
-    # list(map(lambda x: ic(jnp.linalg.eigvals(x)), A_thetas))
-
-    #---Step 3: Fit the GP-------------------------------------------
-    H = HermiteLayer(scale=1, d=1, m=50, o=3)
-    # H.constrained_optimization(ti, embedded_data, t_=t_, A_theta=A_theta)
-    #----------------------------------------------------------------
-
-    #---Step 4: Experimental Design-----------------------------------
-    t_ = jnp.linspace(0, 10, 100)
-    sigma = 0.001
-    eta = non_linear_designs(model, true_x0, t_, A_theta, budget = 30, sigma = sigma, lam = 0.1, bayes=True, design = 'A')
-    # eta = minimize_scalarization_min_max_robust(H, t_, A_thetas, budget = 30, sigma = sigma, lam = 1, rcond = 1e-15, bayes=True)
-    # eta = jnp.array([0, 13, 38, 46, 64, 73, 98, 97])
-
-    # eta_ = list(map(lambda th: minimize_scalarization_min_max_robust(H, t_, th.reshape(1, th.shape[0], th.shape[1]), sigma = sigma, budget = 30, lam = 0.1), A_thetas))
-    
-    # print(list(map(lambda a: a.shape, A_thetas)))
-    eta_ = None
-    print("Parameters:", multi_args[-2])
-    print("Experimental Design:", eta)
-    
-    
-    # eta_ = eta_.reshape(eta_.shape[0], eta_.shape[1])
-    
-    # eta_cont = minimize_scalarization_continuous_FW(H, t_, A_thetas, design = 'A', lam = 1, rcond = 10e-16, sigma = sigma, iterations=500, line_search=True)
-    # etas = minimize_scalarization_continuous(H, t_, A_thetas, design = 'A', lam = 0.1)
-    # eta_cont = sum(etas)/len(etas)
-    eta_cont = None
-    multi_args = jnp.array((2.5, 1.2, 4.2, 2)).reshape(1, -1)
-    #----------------------------------------------------------------
-
-    # multi_args[-2].reshape(1, *multi_args[-1].shape)
-    #---Step 5: Plot the results-------------------------------------
-    # plt.plot(t_, eta)
-    # plt.show()
-    plot_eta(t_, t_, t_[eta], true_x0, s2_vfield, multi_args, eta_cont, ind_etas = [t_[_] for _ in eta_] if eta_ is not None else None)
-    multi_args_ = multi_args
-    multi_args_embedded = jax.vmap(model.get_latent, in_axes=(None, 0))(true_x0 , multi_args_)
-    # K_mats = jax.vmap(model.get_K, in_axes=[None, 0])(None, multi_args_)
-    plot_eta(t_, t_, t_[eta], multi_args_embedded.reshape(1, -1), linear_field, A_theta.reshape(1, *A_theta.shape))#, ind_etas = [t_[_] for _ in eta_])
-    #-----------------------------------------------------------------
-
 def Hill_Design():
     
     #---Step 1: Generate synthetic training data---------------------

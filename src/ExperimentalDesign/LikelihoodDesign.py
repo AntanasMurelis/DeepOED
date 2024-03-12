@@ -1,3 +1,7 @@
+#------------------------------------------------------------------------------------------------
+# The non-linear Experimental Designs based on Fisher Information
+#------------------------------------------------------------------------------------------------
+
 import jax
 import equinox as eqx
 import jax.numpy as jnp
@@ -191,21 +195,12 @@ def minimize_scalarization_continuous_non_linear(field, x0, t_, Gamma, sigma = N
     
 
 def test_minimize_scalarization_Likelihood():
-    # def simple_vector_field(t, x, params):
-    #     # Simple linear system: dx/dt = Ax + Bu
-    #     A = jnp.array([[params, 0], [0, params]])  # Just an example
-    #     B = jnp.array([[1], [1]])  # Just an example
-    #     u = params
-    #     return jnp.dot(A, x)
 
     # Define test parameters
     jax.config.update("jax_enable_x64", True)
     
-    t_ = jnp.linspace(0, 10, 1000)  # Time points
-    # x0 = jnp.array([3.5, jnp.pi]) 
-    
+    t_ = jnp.linspace(0, 10, 1000)  # Time points    
     x0 = jnp.array([3.5, 0.6])  # Initial condition
-    # x0 = jnp.array([3.5, 5.5])  # Initial condition
     
     # Gamma = jnp.linspace(0, 2, 10)  # Parameter range
     true_gamma = jnp.array([1.5])  # True parameter value
@@ -223,23 +218,10 @@ def test_minimize_scalarization_Likelihood():
     plot_eta(t_, t_, t_[eta], x0, osc_vfield2, Gamma, eta_cont=eta_cont, FWHM=None, exclude_designs=True)
     # eta = minimize_scalarization_Likelihood(key, osc_vfield2, t_, x0, true_gamma.reshape(1, -1), true_gamma, budget, sigma)
     # ic(eta)
-    try:
-        # Run the minimization function
-
-        # Assert correctness (this is where you define your success criteria)
-        # Example: check if eta is within a reasonable range or converges to a known value
-        assert eta is not None  # Replace with more specific conditions
-
-        print("Test passed!")
-    except Exception as e:
-        print(f"Test failed: {e}")
-        
-
 
         
 
 if __name__ == "__main__":  
-    test_minimize_scalarization_Likelihood()
     
-    print("done")
+    test_minimize_scalarization_Likelihood()
         

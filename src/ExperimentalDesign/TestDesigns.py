@@ -1,3 +1,8 @@
+#----------------------------------------------------------------
+# Testing of designs
+# Configure the configuration for testing
+#----------------------------------------------------------------
+
 import jax 
 import jax.numpy as jnp
 import jaxopt
@@ -18,9 +23,6 @@ import hydra
 from omegaconf import OmegaConf
 import wandb
 import pickle
-
-import numpy as np
-
 import itertools
 
 
@@ -91,8 +93,6 @@ def optimize_simple(
     print("Time elapsed: ", end_time - start_time)
     
     return xi_final
-
-
 
 class SplitLikelihood():
     
@@ -450,8 +450,6 @@ class SplitLikelihood():
             'other': [other_min, other_max, other_mle]
         }
         
-        
-
 def compare_MLE(self, other, force_field, w0, rounds = 1):
     """
     Compare and plot the MLE trajectories between two instances.
@@ -561,14 +559,6 @@ def cartesian_product(*arrays):
     
     return jnp.array(list(itertools.product(*arrays)))
 
-# Test cartesian product:
-def test_cartesian_product():
-    a = jnp.array([1, 2, 3])
-    b = jnp.array([4, 5])
-    c = jnp.array([6, 7])
-    cp = cartesian_product(a, b, c)
-    assert jnp.allclose(cp, jnp.array([[1, 4, 6], [1, 4, 7], [1, 5, 6], [1, 5, 7], [2, 4, 6], [2, 4, 7], [2, 5, 6], [2, 5, 7], [3, 4, 6], [3, 4, 7], [3, 5, 6], [3, 5, 7]]))
-
 def perform_analysis(t_range, n_points, true_args, true_x0, w0, noise_std_dev, ed, no_ed = False, 
                      full_ed=False, noise_percentage=None, repeats=5, vector_field=None,
                      lr=0.001, max_steps=10000, **kwargs):
@@ -591,19 +581,12 @@ def perform_analysis(t_range, n_points, true_args, true_x0, w0, noise_std_dev, e
         t_eq, data_eq, noisy_data_eq = generate_synthetic_data(t_range, index, true_args, true_x0, noise_std_dev, key3, vector_field, None)
         t_eq_, data_eq_, noisy_data_eq_ = generate_synthetic_data(t_range, index, true_args, true_x0_, noise_std_dev, key3, vector_field, None)
         
-        # datas = jnp.array([noisy_data_ed, noisy_data, noisy_data_eq, noisy_data_eq_])
-        # times = jnp.array([t_ed, t, t_eq, t_eq_])
-        # x0s = jnp.array([true_x0, true_x0_, true_x0, true_x0_])
-        
         datas = jnp.array([noisy_data_ed, noisy_data_eq, noisy_data, noisy_data_eq_])
         times = jnp.array([t_ed, t_eq, t, t_eq_])
         x0s = jnp.array([true_x0, true_x0, true_x0_, true_x0_])
 
         MLES = jax.vmap(optimize_simple, in_axes=[0, 0, None, 0, None, None, None, None, None, None])(datas, times, 
                                             w0, x0s, 10000, 1e-6, 'adam', 0.005, vector_field, False)
-        # Testing dummy MLEs
-        
-        # MLES = jax.random.normal(key, (4, 4))
         
         return MLES
     
@@ -688,9 +671,6 @@ def perform_analysis(t_range, n_points, true_args, true_x0, w0, noise_std_dev, e
             key = jax.random.split(key, 1)[0]
             
             start = time.time()
-            # if true_x0_ is not None:
-            #     MLES = jax.vmap(round, in_axes=[0, None, None, None, None, None, None, None, None, None, None])(
-            #         keys, t_range, n_points, true_args, true_x0, true_x0_, noise_std_dev, vector_field, ed, ed1, index)
 
             MLES = jax.vmap(round3, in_axes=[0, None, None, None, None, None, None, None, None, None, None])(
                 keys, t_range, n_points, true_args, true_x0, noise_std_dev, vector_field, index, ed, no_ed, noise_percentage)
@@ -754,7 +734,6 @@ def plot_results(MLE_reshaped, true_args, labels=None, title='MLE Results Compar
     
     return plt
     
-    
 def get_dif_mean(MLE, true_args):
     """
     Returns the ||\\gamma \\hat{\\gamma}||^2_2 of the results.
@@ -800,6 +779,9 @@ def plot_results(MLE_reshaped, true_args, labels=None, title='MLE Results Compar
     
     return plt
 
+#----------------------------------------------------------------
+# Set configuration for testing
+#---------------------------------------------------------------- 
 @hydra.main(config_path="conf/ExpTest", config_name="VDP")
 def IC_Test(config):
     
