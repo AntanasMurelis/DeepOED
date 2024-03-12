@@ -6,7 +6,7 @@ LODED is a research project developed as part of a Master thesis, focusing on th
 
 ## Key Concepts
 
-- **Linear Experimental Design for linear ODEs**: Utilizes statistical techniques to optimize the allocation of experimental resources. The goal is to maximize the information gained about a system's parameters while minimizing experimental costs and efforts. Linear ODE can be expressed as a linear constraint on a linear model, allowing to use classical OED for sampling such systems.
+- **Linear Experimental Design for linear ODEs**: Utilizes statistical techniques to optimize the allocation of experimental resources. The goal is to maximize the information gained about a system's parameters while minimizing experimental costs and efforts. Linear ODE can be expressed as a linear constraint on a linear model, allowing to use classical OED for sampling such systems. 
 
 - **Linear representation of Dynamical Systems**: An appropriate coordinate system can often describe a non-linear system by linear dynamics. Such representation of the system is called a linear representation. In this project we leverage deep learning for finding such coordinate systems.
 
@@ -42,9 +42,9 @@ Here's how to get started:
 
 ### Setting Up Your Experiment
 
-1. **Define Your System**: Start by defining the non-linear dynamical system you want to study. This involves specifying the differential equations that describe the system's behavior. The vector field should be added to ``` DynamicTraining.py ```.
+1. **Define Your System**: Start by defining the non-linear dynamical system you want to study. This involves specifying the differential equations that describe the system's behavior. The vector field should be added to ``` DynamicTrain.py ```. The system then can be specified by specifying the config file in the ``` DynamicTrain.py ``` file or the command line: eg ```python DynamicTrain.py -cn VDP``` where VDP refers to the VDP.yml file in config. Other systems such as Miachelis-Menten (MM) and the Synthetic Example (S1) can be already found in the config file.
 
 
-2. **Representation Configuration**: Set up the configuration for your experiment. This may involve editing/creating a configuration file with details about the dynamical system, the range of parameters to explore, and the specifics of the deep learning model. This can be found in DeepKoopman module. The model then can be trained using ``` DynamicTraining.py ```.
+2. **Representation Configuration**: Set up the configuration for your experiment. This may involve editing/creating a configuration file with details about the dynamical system, the range of parameters to explore, and the specifics of the deep learning model. This can be found in DeepKoopman module. The model then can be trained using ``` DynamicTrain.py ```.
 
 3. **Experimental Design**: The learned model can then be used to obtained experimental designs using ```MakeDesigns.py```. This will require the trained model.
